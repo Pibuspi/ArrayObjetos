@@ -1,215 +1,200 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Cadastro de Produtos (Array de Objetos)</title>
-    <style>
-      body {
-        font-family:Arial,sans-serif;
-        margin:24px;
-        background:#ffffff;
-    }
-      .container {
-        max-width:900px;
-        margin:0 auto
-    }
-      h1 {
-        margin:0 0 8px;
-        font-size:20px;
-        color:#000
-    }
-      .row {
-        display:flex;
-        gap:8px;
-        align-items:center;
-        margin-bottom:8px
-    }
-      input[type="text"],
-      input[type="number"],
-      input[type="tel"] {
-        padding:6px 10px;
-      }
-      .small {
-        font-size:12px;
-        color:#000000;
-        margin-right:6px;
-      }
-      button {
-        padding:6px 10px;
-        cursor:pointer;
-      }
-      hr {
-        margin:8px 8px 8px 0;
-    }
-      table {
-        width:100%;
-        margin-top:8px
-    }
-      th,td {
-        padding:6px;
-        text-align:left;
-    }
-      #mensagem {
-        margin-top:8px;
-        padding:6px;
-        display:none
-    }
-      #resumo {
-        margin-top:8px;
-        display:none
-    }
-    </style>
+<meta charset="UTF-8">
+<title>Cadastro de Produtos</title>
+
+<style>
+body{
+font-family: Arial;
+background:#f5f5f5;
+margin:30px;
+}
+.container{
+max-width:900px;
+margin:auto;
+background:white;
+padding:20px;
+border-radius:8px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+h1{
+text-align:center;
+margin-bottom:20px;
+}
+.form-row{
+display:flex;
+gap:10px;
+margin-bottom:10px;
+flex-wrap:wrap;
+}
+input{
+padding:6px;
+}
+button{
+padding:6px 10px;
+cursor:pointer;
+}
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:15px;
+}
+th,td{
+border:1px solid #ccc;
+padding:6px;
+text-align:center;
+}
+th{
+background:#eee;
+}
+#mensagem{
+margin-top:10px;
+padding:8px;
+display:none;
+background:#e7f3ff;
+}
+#resumo{
+margin-top:10px;
+padding:8px;
+background:#f0f0f0;
+display:none;
+}
+</style>
 </head>
+
 <body>
-  <div class="container">
-    <h1>Cadastro de Produtos (Array de Objetos)</h1>
+<div class="container">
 
-    <form id="produto-form" onsubmit="return false">
-      <div class="row">
-        <span class="small">Produto</span>
-        <input id="nome" type="text" style="flex:2" />
-        <span class="small">Preço(R$)</span>
-        <input id="preco" type="number" min="0" step="0.01" style="width:110px" />
-        <span class="small">Quantidade</span>
-        <input id="quantidade" type="number" min="1" step="1" style="width:80px" />
-        <button id="adicionarBtn" type="button">Adicionar</button>
-        <button id="listarBtn" type="button" class="ghost">Listar</button>
-        <button id="resumoBtn" type="button" class="ghost">Resumo</button>
-        <button id="limparInputsBtn" type="button" class="ghost">Limpar produtos</button>
-        <button id="limparTudoBtn" type="button" class="red">Limpar tudo</button>
-      </div>
-    </form>
+<h1>Cadastro de Produtos</h1>
+  
+<div class="form-row">
+<label>Produto</label>
+<input id="nome">
+<label>Preço</label>
+<input id="preco" type="number" step="0.01">
+<label>Quantidade</label>
+<input id="quantidade" type="number">
+</div>
 
-    <div class="row"><hr style="width:100%" /></div>
-    <div class="row"><strong>Remover por índice</strong></div>
-    <div class="row">
-      <input id="removeIndex" type="tel" placeholder="ex: 0" style="width:80px" />
-      <button id="removerBtn" type="button" class="ghost">Remover</button>
-    </div>
-    <div id="mensagem"></div>
-    <div id="tableWrap" style="display:none">
-      <table id="produtosTable">
-        <thead>
-          <tr>
-            <th>Índice</th>
-            <th>Nome</th>
-            <th>Preço</th>
-            <th>Quantidade</th>
-            <th>Subtotal</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-    <div id="resumo"></div>
-  </div>
-  <script>
-    const produtos = [];
-    const nomeInput = document.querySelector('#nome');
-    const precoInput = document.querySelector('#preco');
-    const quantidadeInput = document.querySelector('#quantidade');
-    const adicionarBtn = document.querySelector('#adicionarBtn');
-    const listarBtn = document.querySelector('#listarBtn');
-    const resumoBtn = document.querySelector('#resumoBtn');
-    const limparInputsBtn = document.querySelector('#limparInputsBtn');
-    const limparTudoBtn = document.querySelector('#limparTudoBtn');
-    const removerBtn = document.querySelector('#removerBtn');
-    const removeIndexInput = document.querySelector('#removeIndex');
-    const mensagemEl = document.querySelector('#mensagem');
-    const produtosTbody = document.querySelector('#produtosTable tbody');
-    const tableWrap = document.querySelector('#tableWrap');
-    const resumoDiv = document.querySelector('#resumo');
+<div class="form-row">
+<button onclick="adicionar()">Adicionar</button>
+<button onclick="listar()">Listar</button>
+<button onclick="mostrarResumo()">Resumo</button>
+<button onclick="limparInputs()">Limpar inputs</button>
+<button onclick="limparTudo()">Limpar tudo</button>
+</div>
+<hr>
+<h3>Remover por índice</h3>
 
-    function formatCurrency(value) {
-      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
-    }
-    function mostrarMensagem(text, timeout = 2200) {
-      mensagemEl.textContent = text;
-      mensagemEl.style.display = 'block';
-      clearTimeout(mostrarMensagem._t);
-      mostrarMensagem._t = setTimeout(function () {
-        mensagemEl.style.display = 'none';
-      }, timeout);
-    }
-    function adicionarProduto() {
-      const nome = nomeInput.value.trim();
-      const valor = parseFloat(String(precoInput.value).replace(',', '.'));
-      const quantidade = parseInt(quantidadeInput.value, 10);
-      
-      produtos.push({ nome: nome, valor: valor, quantidade: quantidade, total: valor * quantidade });
-      mostrarMensagem('Produto adicionado. Total: ' + produtos.length);
-      limparInputs();
-    }
-    function atualizarTabela() {
-      produtosTbody.innerHTML = '';
-      produtos.forEach(function (p, i) {
-        const tr = document.createElement('tr');
-        tr.innerHTML = '<td>' + i + '</td>' +
-          '<td>' + p.nome + '</td>' +
-          '<td>' + formatCurrency(p.valor) + '</td>' +
-          '<td>' + p.quantidade + '</td>' +
-          '<td>' + formatCurrency(p.total) + '</td>';
-        produtosTbody.appendChild(tr);
-      });
-    }
-    function listarProdutos() {
-      if (produtos.length === 0) {
-        mostrarMensagem('Nenhum produto cadastrado.');
-        tableWrap.style.display = 'none';
-        return;
-      }
-      atualizarTabela();
-      tableWrap.style.display = 'block';
-    }
-    function removerPorIndice() {
-      const idx = parseInt(removeIndexInput.value, 10);
-      if (Number.isNaN(idx) || idx < 0 || idx >= produtos.length) {
-        mostrarMensagem('Índice inválido.');
-        return;
-      }
-      produtos.splice(idx, 1);
-      mostrarMensagem('Removido índice ' + idx + '. Total: ' + produtos.length);
-      if (tableWrap.style.display === 'block') {
-        atualizarTabela();
-      }
-    }
-    function limparInputs() {
-      nomeInput.value = '';
-      precoInput.value = '';
-      quantidadeInput.value = '';
-      nomeInput.focus();
-    }
-    function limparTudo() {
-      produtos.length = 0;
-      tableWrap.style.display = 'none';
-      mostrarMensagem('Todos os produtos foram removidos.');
-    }
-    function mostrarResumo() {
-      const totalLinhas = produtos.length;
-      let totalItens = 0;
-      let valorTotal = 0;
-      produtos.forEach(function (p) {
-        totalItens = totalItens + p.quantidade;
-        valorTotal = valorTotal + p.total;
-      });
-      resumoDiv.innerHTML =
-        'Total de produtos (linhas): ' + totalLinhas + '<br>' +
-        'Total de itens: ' + totalItens + '<br>' +
-        'Valor total: ' + formatCurrency(valorTotal);
-      resumoDiv.style.display = 'block';
-    }
-    adicionarBtn.addEventListener('click', adicionarProduto);
-    listarBtn.addEventListener('click', listarProdutos);
-    resumoBtn.addEventListener('click', mostrarResumo);
-    limparInputsBtn.addEventListener('click', limparInputs);
-    limparTudoBtn.addEventListener('click', limparTudo);
-    removerBtn.addEventListener('click', removerPorIndice);
-    quantidadeInput.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') {
-        adicionarProduto();
-      }
-    });
-  </script>
+<div class="form-row">
+<input id="indice" placeholder="ex: 0">
+<button onclick="remover()">Remover</button>
+</div>
+<div id="mensagem"></div>
+<table id="tabela" style="display:none">
+<thead>
+<tr>
+<th>Índice</th>
+<th>Produto</th>
+<th>Preço</th>
+<th>Quantidade</th>
+<th>Subtotal</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+<div id="resumo"></div>
+</div>
+<script>
+
+let produtos=[]
+function msg(t){
+let m=document.getElementById("mensagem")
+m.innerText=t
+m.style.display="block"
+}
+function adicionar(){
+let nome=document.getElementById("nome").value.trim()
+let preco=parseFloat(document.getElementById("preco").value)
+let qtd=parseInt(document.getElementById("quantidade").value)
+if(nome==""){
+msg("Digite o nome do produto")
+return
+}
+if(isNaN(preco) || preco<=0){
+msg("Preço inválido")
+return
+}
+if(isNaN(qtd) || qtd<=0){
+msg("Quantidade inválida")
+return
+}
+produtos.push({
+nome:nome,
+preco:preco,
+quantidade:qtd
+})
+msg("Produto adicionado")
+limparInputs()
+}
+function listar(){
+if(produtos.length==0){
+msg("Nenhum produto cadastrado")
+return
+}
+let tbody=document.querySelector("#tabela tbody")
+tbody.innerHTML=""
+produtos.forEach(function(p,i){
+let tr=document.createElement("tr")
+let subtotal=p.preco*p.quantidade
+tr.innerHTML=
+"<td>"+i+"</td>"+
+"<td>"+p.nome+"</td>"+
+"<td>R$ "+p.preco.toFixed(2)+"</td>"+
+"<td>"+p.quantidade+"</td>"+
+"<td>R$ "+subtotal.toFixed(2)+"</td>"
+tbody.appendChild(tr)
+})
+document.getElementById("tabela").style.display="table"
+}
+function remover(){
+let i=parseInt(document.getElementById("indice").value)
+if(isNaN(i) || i<0 || i>=produtos.length){
+msg("Índice inválido")
+return
+}
+produtos.splice(i,1)
+msg("Produto removido")
+listar()
+}
+function limparInputs(){
+document.getElementById("nome").value=""
+document.getElementById("preco").value=""
+document.getElementById("quantidade").value=""
+}
+function limparTudo(){
+produtos=[]
+document.querySelector("#tabela tbody").innerHTML=""
+document.getElementById("tabela").style.display="none"
+document.getElementById("resumo").style.display="none"
+msg("Todos os produtos foram removidos")
+}
+function mostrarResumo(){
+let totalProdutos=produtos.length
+let totalItens=0
+let valorTotal=0
+produtos.forEach(function(p){
+totalItens+=p.quantidade
+valorTotal+=p.preco*p.quantidade
+})
+let r=document.getElementById("resumo")
+r.innerHTML=
+"Total de produtos: "+totalProdutos+"<br>"+
+"Total de itens: "+totalItens+"<br>"+
+"Valor total: R$ "+valorTotal.toFixed(2)
+r.style.display="block"
+}
+</script>
 </body>
 </html>
